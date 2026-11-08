@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="grey">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Testor — walk an iOS app, then rerun it cheaper</title>
+  <meta name="description" content="Testor is in beta and coming soon. It chats with Claude or OpenAI, walks your iOS app in the Simulator, and keeps the test cases. Later runs replay the controls it already learned.">
+  <link rel="icon" href="images/icon.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="nav-wrap nav">
+      <a class="brand" href="#top">
+        <img src="images/icon.png" alt="">
+        Testor
+      </a>
+      <nav id="nav-links" class="nav-links" aria-label="Page">
+        <a href="#product">Product</a>
+        <a href="#how">How a run works</a>
+        <a href="#screens">Screenshots</a>
+        <a href="#features">Everything it does</a>
+      </nav>
+      <div class="nav-actions">
+        <button class="menu-button" type="button" aria-expanded="false" aria-controls="nav-links">Menu</button>
+        <button class="theme-toggle" type="button" aria-pressed="true" aria-label="Switch to blue theme">Blue theme</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+    <div class="wrap hero">
+      <div>
+        <p class="availability"><span class="beta">Beta</span> Coming soon</p>
+        <p class="kicker">macOS app for iOS quality</p>
+        <h1>Walk the app once. Rerun the controls.</h1>
+        <p class="lede">Testor chats with Claude or OpenAI, points at a local iOS repo, and walks that app in the iOS Simulator. Test cases and runs stay in Testor. A later run replays the controls it already learned and asks the model only for the steps that still have none.</p>
+        <div class="hero-actions">
+          <a class="button" href="#how">See how a run works</a>
+          <a class="button secondary" href="#screens">View the app</a>
+        </div>
+      </div>
+      <figure>
+        <button class="shot" type="button" data-shot="images/chat.png" data-caption="Chat. The sidebar shows the project, test cases, runs, and which simulator is ready.">
+          <img src="images/chat.png" alt="Testor chat. The assistant walks an iOS app, shows the price of each request, and the sidebar says Ready, iPhone 17.">
+          <figcaption>Chat, with the price of each request and the simulator beside Ready.</figcaption>
+        </button>
+      </figure>
+    </div>
+
+    <section class="section" id="product">
+      <div class="wrap">
+        <div class="section-head">
+          <h2>What it is for</h2>
+          <p>The cases live in Testor, not as XCTest in the product repo. A run opens the app, does the steps, and records pass or fail.</p>
+        </div>
+        <div class="cards">
+          <article class="card">
+            <h3>Chat</h3>
+            <p>Ask Testor to walk a flow. It reads the screen, taps, types, and can save what it just did as a test case.</p>
+          </article>
+          <article class="card">
+            <h3>Test cases</h3>
+            <p>Each case has steps and the result you expect. Suites group cases. One case can sit in more than one suite.</p>
+          </article>
+          <article class="card">
+            <h3>Runs</h3>
+            <p>A run shows live activity, screenshots, pass or fail, and what the model calls cost. History stays with the project.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="how">
+      <div class="wrap">
+        <div class="section-head">
+          <h2>How a run works</h2>
+          <p>Open the installed app, replay what is already known, and spend a model call only where a step still needs one.</p>
+        </div>
+        <div class="steps">
+          <div class="step-list" role="tablist" aria-label="Run stages">
+            <button class="step-button" type="button" role="tab" aria-selected="true" aria-controls="stage-1" id="stage-tab-1">1. Open the app<small>Build only when the suite asks</small></button>
+            <button class="step-button" type="button" role="tab" aria-selected="false" aria-controls="stage-2" id="stage-tab-2">2. Plan the steps<small>One line is one step</small></button>
+            <button class="step-button" type="button" role="tab" aria-controls="stage-3" id="stage-tab-3">3. Replay controls<small>No model call</small></button>
+            <button class="step-button" type="button" role="tab" aria-controls="stage-4" id="stage-tab-4">4. Fill the gaps<small>Learn the identifier</small></button>
+            <button class="step-button" type="button" role="tab" aria-controls="stage-5" id="stage-tab-5">5. Check once<small>Pass or fail</small></button>
+          </div>
+          <div class="panel step-panel" id="stage-1" role="tabpanel" aria-labelledby="stage-tab-1">
+            <div class="step-index">STAGE 1</div>
+            <h3>Open the app in the Simulator</h3>
+            <p>The suite decides whether to build. A suite set to rebuild builds first. A suite left on the installed app reuses what is already there, and does not silently rebuild. If you run every case with no suite selected, Testor may build when launch fails. Stop during setup cancels the run.</p>
+          </div>
+          <div class="panel step-panel" id="stage-2" role="tabpanel" aria-labelledby="stage-tab-2" hidden>
+            <div class="step-index">STAGE 2</div>
+            <h3>Turn the case into a plan</h3>
+            <p>Steps are one per line. An accessibility identifier already written on a step, like (id: notes.addButton), becomes a saved control. Lines that start with verify, check, or confirm are not separate model calls. They wait for the single check at the end. Changing a step’s wording drops the controls saved for that line.</p>
+          </div>
+          <div class="panel step-panel" id="stage-3" role="tabpanel" aria-labelledby="stage-tab-3" hidden>
+            <div class="step-index">STAGE 3</div>
+            <h3>Replay the controls you already have</h3>
+            <p>A step with a saved identifier or label is tapped, typed, or swiped directly. That step does not call the model. The same case gets cheaper every time those controls still match the screen. A coordinate-only tap is not saved, because it will not find the control next time.</p>
+          </div>
+          <div class="panel step-panel" id="stage-4" role="tabpanel" aria-labelledby="stage-tab-4" hidden>
+            <div class="step-index">STAGE 4</div>
+            <h3>Ask the model only for an empty step</h3>
+            <p>The next run of a step with nothing saved asks the model to do that step, then stores the identifier and label it used. If a saved control is missing, the error is noted and the model does the step. The control that worked replaces the old one. Verify steps are skipped here and left for the final check.</p>
+          </div>
+          <div class="panel step-panel" id="stage-5" role="tabpanel" aria-labelledby="stage-tab-5" hidden>
+            <div class="step-index">STAGE 5</div>
+            <h3>One check, then the result</h3>
+            <p>After the steps, Testor looks at the screen and reports pass or fail. Screenshots from that check show up in the run activity. A failed case does not stop the rest of a suite. Stop does. If the tool-round limit is on, hitting it ends the run instead of nudging the model to keep going.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="screens">
+      <div class="wrap">
+        <div class="section-head">
+          <h2>The app</h2>
+          <p>These are screenshots from Testor. Click one to open it larger, the same way a run screenshot opens from the activity list.</p>
+        </div>
+        <div class="gallery">
+          <button class="shot" type="button" data-shot="images/chat.png" data-caption="A chat walking the simulator, saving a test case, and showing the price of each request.">
+            <img src="images/chat.png" alt="Full Testor window during a chat that creates a reminder and saves a test case.">
+            <figcaption>Chat. Tool calls, request prices, and Ready beside the simulator name.</figcaption>
+          </button>
+          <div class="stack">
+            <button class="shot" type="button" data-shot="images/saved-control.png" data-caption="A step that already has a saved control. The next run taps that identifier and does not call the model for this step.">
+              <img src="images/saved-control.png" alt="A test step with a saved tap on the accessibility identifier scrib.addButton.">
+              <figcaption>A step with a saved control: Tap · scrib.addButton.</figcaption>
+            </button>
+            <button class="shot" type="button" data-shot="images/steps.png" data-caption="Steps with nothing saved yet. The next run asks the model for each of these, then stores the identifier and label.">
+              <img src="images/steps.png" alt="A test case whose steps say no saved control, so the model will do them once and then save the control.">
+              <figcaption>Steps with nothing saved yet. The next run learns them.</figcaption>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="features">
+      <div class="wrap">
+        <div class="section-head">
+          <h2>Everything it does</h2>
+          <p>The window is a sidebar plus one main page: chat, test cases, runs, or settings.</p>
+        </div>
+        <nav class="feature-index" aria-label="Features">
+          <a href="#chat">Chat</a>
+          <a href="#project">Project</a>
+          <a href="#prices">Prices</a>
+          <a href="#rounds">Tool rounds</a>
+          <a href="#cases">Test cases</a>
+          <a href="#controls">Saved controls</a>
+          <a href="#runs">Runs</a>
+          <a href="#shots">Screenshots</a>
+          <a href="#settings">Settings</a>
+        </nav>
+
+        <div class="split" id="chat">
+          <div class="copy">
+            <h2>Chat</h2>
+            <p>The composer asks Testor to walk a case. The newest chat stays at the top. Opening an older chat does not move it above a newer one.</p>
+            <ul>
+              <li>Claude or OpenAI, chosen in the composer and in Settings.</li>
+              <li>Each tool call is shown as it happens: reading the screen, tapping, typing, taking a screenshot.</li>
+              <li>Learn writes the navigation from this chat into <code>.testor/TESTOR.md</code>, so the next walk can follow those identifiers.</li>
+              <li>The context file sits beside the chat when that panel is on.</li>
+            </ul>
+          </div>
+          <div class="window" aria-hidden="true">
+            <div class="window-bar"><span class="dots"><i></i><i></i><i></i></span> Testor</div>
+            <div class="app">
+              <aside class="side">
+                <div class="side-brand"><img src="images/icon.png" alt=""> Testor</div>
+                <div class="side-label">PROJECTS</div>
+                <div class="side-item active">Notes</div>
+                <div class="side-link">Test cases</div>
+                <div class="side-link">Runs</div>
+                <div class="side-link">Context file</div>
+                <div class="side-link">New chat</div>
+                <div class="side-label">CHATS</div>
+                <div class="side-item active">Latest chat</div>
+                <div class="side-link">Older chat</div>
+                <div class="status"><b>Ready</b> · iPhone 17</div>
+              </aside>
+              <div class="main">
+                <p class="meta">describe_ui</p>
+                <p>The add button is on screen. I’ll tap it, then type the note.</p>
+                <p class="meta">Request $0.0044</p>
+                <div class="case-step">ui_tap · notes.addButton</div>
+                <div class="row" style="margin-top: 28px;">
+                  <span class="meta">Ask Testor to walk a case…</span>
+                  <span class="meta">This chat $0.018</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="split" id="project">
+          <div class="copy">
+            <h2>A project is a local iOS repo</h2>
+            <p>Add a project from the sidebar. Testor keeps that repo’s cases, runs, and chats together. The status line under the sidebar names the simulator Testor is using, next to Ready.</p>
+            <ul>
+              <li>The first time the UI driver starts, it can take a while. Later calls reuse it.</li>
+              <li>Taps prefer an accessibility identifier. The label is the fallback.</li>
+              <li>Setup steps on a suite can run before the cases, when the suite needs the app in a known place.</li>
+            </ul>
+          </div>
+          <div class="copy">
+            <h2 id="prices">Prices stay visible</h2>
+            <p>Turn on request prices in Settings. Each model call shows an estimate under that reply, and the composer shows the total for the chat. A chat that has not spent anything shows $0.00. Runs show the same kind of total.</p>
+            <h2 id="rounds" style="margin-top: 28px;">Tool rounds have a limit</h2>
+            <p>One round is one request to the model. Reading the screen, tapping, and typing each use a round. The default stop is 20, and it applies to chats and runs. You can raise it, or turn the limit off and leave a run going until it finishes or you press Stop. When the limit hits, Testor stops and says so.</p>
+          </div>
+        </div>
+
+        <div class="split" id="cases">
+          <div class="window">
+            <div class="window-bar"><span class="dots"><i></i><i></i><i></i></span> Test cases</div>
+            <div class="main">
+              <div class="row">
+                <strong>Create a note</strong>
+                <span class="pill ok">Regression</span>
+              </div>
+              <p class="meta">Cases are alphabetical. Suite order is the order you added them.</p>
+              <div class="case-step" id="controls">
+                <strong>1. Tap Add</strong>
+                <span class="control">Tap · notes.addButton</span>
+              </div>
+              <div class="case-step">
+                <strong>2. Type the note</strong>
+                <span class="control">Type · notes.editor</span>
+              </div>
+              <div class="case-step">
+                <strong>3. Confirm the note is in the list</strong>
+                <span class="control missing">Checked at the end of the run.</span>
+              </div>
+              <div class="case-step">
+                <strong>4. Open the new note</strong>
+                <span class="control missing">No saved control. The model does this step, then saves the control.</span>
+              </div>
+            </div>
+          </div>
+          <div class="copy">
+            <h2>Test cases and saved controls</h2>
+            <p>A case keeps its steps and the result you expect. Every suite that includes that case stays current, because the steps live on the case, not copied into the suite.</p>
+            <ul>
+              <li>Under each step, Testor keeps the identifier or label that worked.</li>
+              <li>A rerun uses those controls and does not call the model.</li>
+              <li>A step with nothing saved asks the model once, then stores what it used.</li>
+              <li>Clear saved controls drops them for the whole case. Editing the words of a step drops just that step’s controls.</li>
+              <li>You can run one case, one suite, or every case.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="split" id="runs">
+          <div class="copy">
+            <h2>Runs</h2>
+            <p>History is the list of runs for this project. Open one to see when it started, how long it took, what it cost, and the activity as it happened.</p>
+            <ul>
+              <li>Passed and failed cases in a suite stay listed separately.</li>
+              <li>A tool error on one case does not fail the cases that have not run yet.</li>
+              <li>Stop ends the whole run.</li>
+              <li>Activity follows along only while you are already at the bottom. Scrolling up keeps your place.</li>
+            </ul>
+            <h2 id="shots" style="margin-top: 28px;">Screenshots in the activity</h2>
+            <p>When a run takes a screenshot, a small image appears on that activity row. Click it and the shot opens larger. You can move through the other shots from that run. Deleting a run deletes its images too.</p>
+          </div>
+          <div class="window">
+            <div class="window-bar"><span class="dots"><i></i><i></i><i></i></span> Runs</div>
+            <div class="main">
+              <div class="row">
+                <div>
+                  <strong>Regression</strong>
+                  <div class="meta">1 passed · 1 failed · 2 cases</div>
+                </div>
+                <span class="pill bad">Failed</span>
+              </div>
+              <div class="row" style="margin-top: 10px;">
+                <span class="meta">Duration 1m 12s</span>
+                <span class="meta">Price $0.056</span>
+              </div>
+              <p class="meta" style="margin-top: 16px;">ACTIVITY</p>
+              <div class="activity-line">Opened the app</div>
+              <div class="activity-line">Replayed Tap · notes.addButton</div>
+              <div class="activity-line">
+                Screenshot
+                <img class="thumb" src="images/chat.png" alt="Open the chat screenshot larger" data-shot="images/chat.png" data-caption="Run activity keeps a small screenshot. Clicking it opens the shot larger.">
+              </div>
+              <div class="activity-line">Checked the result · Passed the first case</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="split" id="settings">
+          <div class="window">
+            <div class="window-bar"><span class="dots"><i></i><i></i><i></i></span> Settings</div>
+            <div class="main">
+              <div class="setting-row">
+                <div>
+                  <strong>Model</strong>
+                  <p>Choose who answers, and store the key for that provider on this Mac.</p>
+                </div>
+                <span class="meta">Claude Sonnet</span>
+              </div>
+              <div class="setting-row">
+                <div>
+                  <strong>Appearance</strong>
+                  <p>Blue is this navy theme. Grey is the neutral background. The same switch is in the corner of this page.</p>
+                </div>
+                <span class="meta">Grey</span>
+              </div>
+              <div class="setting-row">
+                <div>
+                  <strong>Show request prices</strong>
+                  <p>Each model call shows its estimated price in the chat.</p>
+                </div>
+                <span class="toggle" aria-hidden="true"><i></i></span>
+              </div>
+              <div class="setting-row">
+                <div>
+                  <strong>Show context panel</strong>
+                  <p>Keep the project notes beside the chat.</p>
+                </div>
+                <span class="toggle" aria-hidden="true"><i></i></span>
+              </div>
+              <div class="setting-row">
+                <div>
+                  <strong>No limit</strong>
+                  <p>Off, so a chat or run stops after 20 tool rounds.</p>
+                </div>
+                <span class="toggle off" aria-hidden="true"><i></i></span>
+              </div>
+            </div>
+          </div>
+          <div class="copy">
+            <h2>Settings</h2>
+            <p>Settings is a page in the main pane, opened from the gear. It is not a small sheet. API keys stay in the Keychain on this Mac.</p>
+            <ul>
+              <li><strong>Model.</strong> Pick the provider and the model. Save stores the key.</li>
+              <li><strong>Appearance.</strong> Blue or Grey. Accent color stays in both.</li>
+              <li><strong>Workspace.</strong> Request prices, the context panel, and the tool-round limit. These apply to every project.</li>
+            </ul>
+            <p style="margin-top: 16px;">Cases, runs, and chats stay on this Mac with the app. The product repo does not receive them unless you ask Testor to write something there.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <span>Testor is in beta and coming soon.</span>
+      <span>Testor walks an iOS app in the Simulator and keeps the cases.</span>
+      <span>Blue and Grey match the app.</span>
+    </div>
+  </footer>
+
+  <div class="lightbox" id="lightbox" hidden>
+    <button class="lightbox-close" type="button" aria-label="Close">Close</button>
+    <button class="lightbox-nav prev" type="button" aria-label="Previous screenshot">Prev</button>
+    <img alt="">
+    <button class="lightbox-nav next" type="button" aria-label="Next screenshot">Next</button>
+    <div class="lightbox-caption"></div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
